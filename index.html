@@ -1,51 +1,31 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>墨香 · 翻譯</title>
-    <style>
-        body { font-family: serif; background: #fdfaf5; display: flex; justify-content: center; padding: 20px; }
-        .container { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; border: 1px solid #d4c4a8; }
-        h2 { color: #5d4037; text-align: center; border-bottom: 2px solid #8d6e63; padding-bottom: 10px; }
-        textarea { width: 100%; height: 100px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #8d6e63; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; margin-top: 15px; }
-        #result { margin-top: 20px; padding: 15px; background: #f1ede7; border-radius: 8px; line-height: 1.7; color: #3e2723; white-space: pre-wrap; min-height: 50px; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>墨香 · 翻譯</h2>
-    <textarea id="userInput" placeholder="輸入想翻譯的文字..."></textarea>
-    <button id="btn" onclick="start()">揮毫轉換</button>
-    <div id="result">等待輸入中...</div>
-</div>
 <script>
     async function start() {
         const key = "AIzaSyAK5PsZBBgmqhHIaQdZZhupo5fKO-S2sZg"; 
         const input = document.getElementById('userInput').value;
         const res = document.getElementById('result');
         if (!input.trim()) return alert("請輸入內容");
-        res.innerText = "正在研墨中...";
+        res.innerText = "老師正在研墨中...";
         try {
+            // 注意這裡：我把型號改成了最穩定的 gemini-1.5-flash
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: "你是文學家。請將這段文字做文言白話雙向轉換： " + input }] }]
+                    contents: [{ parts: [{ text: "你是文學家。請將這段文字翻譯成文言文或解析： " + input }] }]
                 })
             });
             const data = await response.json();
+            
             if (data.error) {
-                res.innerText = "錯誤原因：" + data.error.message;
-            } else {
+                res.innerText = "【診斷】" + data.error.message;
+            } else if (data.candidates && data.candidates[0].content) {
                 res.innerText = data.candidates[0].content.parts[0].text;
+            } else {
+                res.innerText = "AI 回傳了空結果，請稍後再試。";
             }
         } catch (e) {
             res.innerText = "連線失敗，請檢查網路。";
         }
     }
 </script>
-</body>
-</html>
