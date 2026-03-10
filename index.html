@@ -1,31 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨香翻譯</title>
+    <style>
+        body { font-family: serif; background: #fdfaf5; display: flex; justify-content: center; padding: 20px; }
+        .container { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; border: 1px solid #d4c4a8; }
+        textarea { width: 100%; height: 100px; margin-bottom: 10px; padding: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #8d6e63; color: white; border: none; cursor: pointer; }
+        #result { margin-top: 20px; white-space: pre-wrap; line-height: 1.6; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>墨香 · 翻譯</h2>
+    <textarea id="input" placeholder="輸入文字..."></textarea>
+    <button onclick="send()">揮毫轉換</button>
+    <div id="result">結果會顯示在這裡...</div>
+</div>
 <script>
-    async function start() {
-        const key = "AIzaSyAK5PsZBBgmqhHIaQdZZhupo5fKO-S2sZg"; 
-        const input = document.getElementById('userInput').value;
+    async function send() {
+        const key = "AIzaSyAK5PsZBBgmqhHIaQdZZhupo5fKO-S2sZg";
+        const text = document.getElementById('input').value;
         const res = document.getElementById('result');
-        if (!input.trim()) return alert("請輸入內容");
-        res.innerText = "老師正在研墨中...";
+        if(!text) return;
+        res.innerText = "研墨中...";
         try {
-            // 注意這裡：我把型號改成了最穩定的 gemini-1.5-flash
+            // 我把這裡改成 gemini-1.5-flash，這是目前最正確的名字
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: "你是文學家。請將這段文字翻譯成文言文或解析： " + input }] }]
-                })
+                body: JSON.stringify({ contents: [{ parts: [{ text: "翻譯成優雅的文言文：" + text }] }] })
             });
             const data = await response.json();
-            
-            if (data.error) {
-                res.innerText = "【診斷】" + data.error.message;
-            } else if (data.candidates && data.candidates[0].content) {
-                res.innerText = data.candidates[0].content.parts[0].text;
-            } else {
-                res.innerText = "AI 回傳了空結果，請稍後再試。";
-            }
+            res.innerText = data.candidates[0].content.parts[0].text;
         } catch (e) {
-            res.innerText = "連線失敗，請檢查網路。";
+            res.innerText = "發生錯誤，請稍後再試。";
         }
     }
 </script>
+</body>
+</html>
